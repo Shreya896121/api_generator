@@ -1,37 +1,25 @@
-DELIMITER $$
-
-CREATE PROCEDURE sp_get_tasks(
-    IN p_page INT,
-    IN p_limit INT,
-    OUT p_total INT
-)
+CREATE PROCEDURE sp_get_tasks
+    @PageNumber INT = 1,
+    @PageSize INT = 10
+AS
 BEGIN
-    DECLARE v_offset INT DEFAULT 0;
+    SET NOCOUNT ON;
+    
+    DECLARE @Offset INT;
+    DECLARE @Total INT;
 
-    -- Error handler for SQL exceptions
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        RESIGNAL;
-    END;
+    IF @PageNumber IS NULL OR @PageNumber < 1
+        SET @PageNumber = 1;
+    
+    IF @PageSize IS NULL OR @PageSize < 1
+        SET @PageSize = 10;
+    
+    SET @Offset = (@PageNumber - 1) * @PageSize;
 
-    -- Basic parameter validation
-    IF p_page IS NULL OR p_page < 1 THEN
-        SET p_page = 1;
-    END IF;
+    SELECT @Total = COUNT(*) FROM tasks;
+    
+    SELECT @Total AS total_count;
 
-    IF p_limit IS NULL OR p_limit < 1 THEN
-        SET p_limit = 10;
-    END IF;
-
-    -- Calculate offset for pagination
-    SET v_offset = (p_page - 1) * p_limit;
-
-    -- Get total count of tasks
-    SELECT COUNT(*) INTO p_total
-    FROM tasks;
-
-    -- Return paginated list of tasks
     SELECT 
         task_id,
         person_id,
@@ -39,10 +27,7 @@ BEGIN
         start_date,
         end_date
     FROM tasks
-    ORDER BY task_id DESC
-    LIMIT p_limit OFFSET v_offset;
-END$$
-
-DELIMITER ;
-
-
+    ORDER BY task_id 
+    OFFSET @Offset ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
+END

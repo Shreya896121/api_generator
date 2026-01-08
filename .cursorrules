@@ -30,7 +30,7 @@ Generate MySQL stored procedures and corresponding JavaScript API functions base
 
 ### 3. Naming Conventions
 - Stored procedures: `sp_<action>_<entity>` (e.g., `sp_get_users`)
-- JavaScript functions: `get<Entity><Action>` (e.g., `getUsers`)
+- JavaScript functions: `pkg<Entity><Action>` (e.g., `pkggetUsers`)
 - Use camelCase for JavaScript
 - Use snake_case for SQL
 
@@ -108,14 +108,14 @@ Generate MySQL stored procedures and corresponding JavaScript API functions base
     - Action and entity (e.g., "get tasks", "create person")
     - Appropriate stored procedure name: `sp_<action>_<entity>.sql`
     - Appropriate JS function and file name: `<action><Entity>.js`
-<!-- 
+
   - File generation rules (MANDATORY):
     - All generated files MUST be created inside the `scripts/` folder.
     - If `scripts/` does not exist, the **generator (CLI)** MUST create it
       using Node.js filesystem APIs:
       `fs.mkdirSync('scripts', { recursive: true })`
    - JavaScript file path: `scripts/<action><Entity>.js`
-    - SQL file path: `scripts/sp_<action>_<entity>.sql` -->
+    - SQL file path: `scripts/sp_<action>_<entity>.sql`
 
 
   - Generate **two code blocks only**:

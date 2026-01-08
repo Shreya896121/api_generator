@@ -1,5 +1,3 @@
-DROP PROCEDURE IF EXISTS sp_get_persons_names;
-
 DELIMITER $$
 
 CREATE PROCEDURE sp_get_persons_names(
