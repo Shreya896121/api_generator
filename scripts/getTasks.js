@@ -1,76 +1,81 @@
 const Sequelize = require('sequelize');
-const sfContext= require('../config/connection');
+const sfContext = require('../config/connection');
+const logger = require('../logger');
 
-async function getTasks(requestBody,queryParams=null) {
+async function getTasks(queryParams = null, requestBody = null) {
+    logger.info('getTasks', "Starting to execute getTasks");
     try {
-    const params = (queryParams && Object.keys(queryParams).length > 0) ? queryParams : requestBody || {};
-    const PageNumber = parseInt(params.PageNumber, 10) || 1;
-    const PageSize = parseInt(params.PageSize, 10) || 10;
-    
-    const replacements={PageNumber, PageSize };
+        logger.info('getTasks', 'requestBody=%j', requestBody);
+        logger.info('getTasks', 'queryParams=%j', queryParams);
 
-    const results = await sfContext.query(
-        `EXEC sp_get_tasks 
+        const params = (queryParams && Object.keys(queryParams).length > 0) ? queryParams : requestBody || {};
+        const PageNumber = parseInt(params.PageNumber, 10) || 1;
+        const PageSize = parseInt(params.PageSize, 10) || 2;
+
+        logger.info('getTasks', `Pagination -> PageNumber=${PageNumber}, PageSize=${PageSize}`);
+
+        const replacements = { PageNumber, PageSize };
+
+        logger.info('getTasks', 'Executing stored procedure sp_get_tasks');
+
+        const results = await sfContext.query(
+            `EXEC sp_get_tasks 
         @PageNumber = :PageNumber, 
         @PageSize = :PageSize`,
-        { replacements, 
-        type: Sequelize.QueryTypes.RAW 
-    }
-);
+            {
+                replacements,
+                type: Sequelize.QueryTypes.SELECT
+            }
+        );
 
-// Debug: Check what results look like
-console.log('First few results:', results.slice(0, 3));
+        logger.info('getTasks', `DB query completed. Rows returned: ${results.length}`);
+        logger.info('getTasks', 'Raw results: %j', results);
 
-// For RAW queries, results is an array of arrays
-// The first array contains the first result set
-// The second array contains the second result set
 
-let total = 0;
-let tasksData = [];
+        const total =
+            results.length > 0 && results[0].total_count !== undefined
+                ? results[0].total_count
+                : 0;
 
-if (Array.isArray(results)) {
-    if (results.length >= 1) {
-        // First result set: total count
-        const totalSet = results[0];
-        if (totalSet && totalSet.length > 0 && totalSet[0].total_count !== undefined) {
-            total = totalSet[0].total_count;
+        logger.info('getTasks', `Total count: ${total}`);
+
+        if (total > 0) {
+            const tasks = results.filter(row => row.task_id !== undefined);
+            logger.info('getTasks', `Returning ${tasks.length} tasks`);
+
+            return {
+                success: true,
+                data: {
+                    tasks,
+                    pagination: {
+                        page: PageNumber,
+                        limit: PageSize,
+                        total,
+                        totalPages: Math.ceil(total / PageSize)
+                    }
+                },
+                error: null
+            };
         }
-    }
-    
-    if (results.length >= 2) {
-        // Second result set: tasks data
-        tasksData = results[1] || [];
-    }
-}
 
-// Alternative: If results is a flat array
-if (results && results.length > 0 && results[0] && results[0].total_count !== undefined) {
-    // It's returning both sets mixed together
-    // Find the total_count row
-    const totalRow = results.find(row => row.total_count !== undefined);
-    if (totalRow) {
-        total = totalRow.total_count;
-        // Filter out the total row from tasks
-        tasksData = results.filter(row => row.task_id !== undefined);
-    } else {
-        tasksData = results;
-    }
-}
-
+        logger.warn('getTasks', 'No data found');
+        // No data case
         return {
             success: true,
             data: {
-                tasks: tasksData,
+                tasks: [],
                 pagination: {
                     page: PageNumber,
                     limit: PageSize,
-                    total: total,
-                    totalPages: Math.ceil(total / PageSize)
+                    total: 0,
+                    totalPages: 0
                 }
             },
             error: null
         };
+
     } catch (error) {
+        logger.error('getTasks', 'Error: %s', error.message);
         return {
             success: false,
             data: null,

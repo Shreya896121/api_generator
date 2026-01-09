@@ -1,3 +1,6 @@
+USE api_generate
+GO;
+
 CREATE PROCEDURE sp_get_tasks
     @PageNumber INT = 1,
     @PageSize INT = 10
@@ -17,9 +20,10 @@ BEGIN
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
     SELECT @Total = COUNT(*) FROM tasks;
+    
+    SELECT @Total AS total_count;
 
-    SELECT 
-        @Total AS total_count,
+    SELECT
         task_id,
         person_id,
         title,
