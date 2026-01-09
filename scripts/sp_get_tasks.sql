@@ -17,10 +17,9 @@ BEGIN
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
     SELECT @Total = COUNT(*) FROM tasks;
-    
-    SELECT @Total AS total_count;
 
     SELECT 
+        @Total AS total_count,
         task_id,
         person_id,
         title,

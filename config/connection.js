@@ -1,6 +1,7 @@
-const Sequelize = require('sequelize');
+const path = require('path');
 const dotenv = require('dotenv');
-dotenv.config(); 
+dotenv.config({ path: path.resolve(__dirname,'..', '.env') });
+const Sequelize = require('sequelize');
 
 const sequelizeInstance = new Sequelize({
     database: process.env.DB_NAME,
@@ -14,7 +15,8 @@ const sequelizeInstance = new Sequelize({
             trustServerCertificate: true,
             instanceName:process.env.DB_INSTANCE
         }
-    }
+    },
+    logging:false
 });
 
 sequelizeInstance.authenticate()
