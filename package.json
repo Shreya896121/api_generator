@@ -4,10 +4,7 @@
   "description": "Generate MySQL stored procedures and JavaScript API functions from natural language prompts",
   "main": "runapi.js",
   "scripts": {
-    "start": "node runapi.js",
-    "api": "node runapi.js",
-    "help": "node runapi.js",
-    "list": "node runapi.js"
+    "execute": "node runapi.js"
   },
   "keywords": [
     "api",

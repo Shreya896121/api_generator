@@ -9,6 +9,7 @@ async function getTasks(queryParams = null, requestBody = null) {
         logger.info('getTasks', 'queryParams=%j', queryParams);
 
         const params = (queryParams && Object.keys(queryParams).length > 0) ? queryParams : requestBody || {};
+        
         const PageNumber = parseInt(params.PageNumber, 10) || 1;
         const PageSize = parseInt(params.PageSize, 10) || 2;
 

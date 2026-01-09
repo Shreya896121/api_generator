@@ -1,5 +1,6 @@
 // logger.js
 const { createLogger, format, transports } = require('winston');
+const util = require('util');
 
 const baseLogger = createLogger({
   level: process.env.LOG_LEVEL || 'info',
@@ -15,16 +16,17 @@ const baseLogger = createLogger({
   ]
 });
 
-// Wrapper to mimic npmlog: log(level, prefix, message)
-function logWithPrefix(level, prefix, message) {
-  baseLogger.log(level, `[${prefix}] ${message}`);
+// Mimic npmlog: logger.info(prefix, msg, ...args)
+function logWithPrefix(level, prefix, msg, ...args) {
+  const formattedMessage = util.format(msg, ...args);
+  baseLogger.log(level, `[${prefix}] ${formattedMessage}`);
 }
 
 module.exports = {
-  info: (prefix, message) => logWithPrefix('info', prefix, message),
-  warn: (prefix, message) => logWithPrefix('warn', prefix, message),
-  error: (prefix, message) => logWithPrefix('error', prefix, message),
-  verbose: (prefix, message) => logWithPrefix('verbose', prefix, message),
-  debug: (prefix, message) => logWithPrefix('debug', prefix, message),
-  silly: (prefix, message) => logWithPrefix('silly', prefix, message)
+  info: (prefix, msg, ...args) => logWithPrefix('info', prefix, msg, ...args),
+  warn: (prefix, msg, ...args) => logWithPrefix('warn', prefix, msg, ...args),
+  error: (prefix, msg, ...args) => logWithPrefix('error', prefix, msg, ...args),
+  verbose: (prefix, msg, ...args) => logWithPrefix('verbose', prefix, msg, ...args),
+  debug: (prefix, msg, ...args) => logWithPrefix('debug', prefix, msg, ...args),
+  silly: (prefix, msg, ...args) => logWithPrefix('silly', prefix, msg, ...args)
 };
